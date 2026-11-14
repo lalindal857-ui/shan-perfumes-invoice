@@ -28,6 +28,28 @@ jobs:
       - name: Extract Project
         run: unzip -q SHAN_PERFUMES_Phone_APK_Build_Project.zip
 
+      - name: Fix Java and Kotlin versions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("SHAN_PERFUMES_Android_Project/app/build.gradle.kts")
+          s = p.read_text()
+          s = s.replace(
+              "    compileSdk = 35",
+              """    compileSdk = 35
+
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+
+              kotlinOptions {
+                  jvmTarget = "17"
+              }"""
+          )
+          p.write_text(s)
+          PY
+
       - name: Build APK
         run: |
           cd SHAN_PERFUMES_Android_Project
@@ -38,3 +60,4 @@ jobs:
         with:
           name: SHAN-PERFUMES-APK
           path: SHAN_PERFUMES_Android_Project/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
